@@ -17,7 +17,8 @@ void AMovingPlatform::BeginPlay()
 
 	if (HasAuthority())
 	{
-		StartLocation = GetActorLocation();
+		GlobalStartLocation = GetActorLocation();
+		GlobalTargetLocation = GetTransform().TransformPosition(TargetLocation);
 		SetReplicates(true);
 		SetReplicateMovement(true);
 	}
@@ -30,20 +31,18 @@ void AMovingPlatform::Tick(const float DeltaSeconds)
 	if (HasAuthority())
 	{
 		auto ActorLocation = GetActorLocation();
-		const auto Direction = MoveDirection.GetSafeNormal();
-		const auto CurrentDistance = (ActorLocation - StartLocation).Size();
+		const auto Distance = (GlobalTargetLocation - GlobalStartLocation).Size();
+		const auto CurrentDistance = (ActorLocation - GlobalStartLocation).Size();
 		
-		UE_LOG(LogTemp, Warning, TEXT("Dist %f"), CurrentDistance)
-		if ((CurrentDistance > Distance) && DirectionMultiplier > 0)
+		if (CurrentDistance > Distance)
 		{
-			DirectionMultiplier = -1;
-		} else if ((CurrentDistance < 10) && DirectionMultiplier < 0)
-		{
-			DirectionMultiplier = 1;
+			const auto Swap = GlobalStartLocation;
+			GlobalStartLocation = GlobalTargetLocation;
+			GlobalTargetLocation = Swap;
 		}
 
-		UE_LOG(LogTemp, Warning, TEXT("Multiplier: %f"), DirectionMultiplier)
-		ActorLocation += DirectionMultiplier * Speed * DeltaSeconds * Direction;
+		const auto Direction = (GlobalTargetLocation - GlobalStartLocation).GetSafeNormal();
+		ActorLocation += Speed * DeltaSeconds * Direction;
 
 		SetActorLocation(ActorLocation);
 	}
