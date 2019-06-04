@@ -4,6 +4,7 @@
 #include "MultiplayerPuzzleGameInstance.h"
 
 #include <Engine/Engine.h>
+#include <GameFramework/PlayerController.h>
 
 void UMultiplayerPuzzleGameInstance::Init()
 {
@@ -30,4 +31,8 @@ void UMultiplayerPuzzleGameInstance::Join(FString& Address) const
 
 	Engine->AddOnScreenDebugMessage(0, 5, FColor::Green, FString::Printf(TEXT("Joining %s"), *Address));
 
+	const auto PlayerController = GetFirstLocalPlayerController();
+	if (!ensure(PlayerController != nullptr)) return;
+
+	PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 }
