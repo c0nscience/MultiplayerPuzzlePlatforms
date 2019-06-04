@@ -23,7 +23,15 @@ public:
 	float Speed = 20;
 
 	UPROPERTY(EditAnywhere, Meta = (MakeEditWidget = true))
-	FVector TargetLocation;
+	FVector MoveDirection;
+
+	UPROPERTY(EditAnywhere)
+	float Distance = 500;
+
+private:
+	FVector StartLocation;
+
+	float DirectionMultiplier = 1;
 
 protected:
 	void BeginPlay() override;

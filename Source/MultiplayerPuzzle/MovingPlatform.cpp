@@ -2,6 +2,7 @@
 
 
 #include "MovingPlatform.h"
+#include <string>
 
 AMovingPlatform::AMovingPlatform()
 {
@@ -16,6 +17,7 @@ void AMovingPlatform::BeginPlay()
 
 	if (HasAuthority())
 	{
+		StartLocation = GetActorLocation();
 		SetReplicates(true);
 		SetReplicateMovement(true);
 	}
@@ -28,9 +30,20 @@ void AMovingPlatform::Tick(const float DeltaSeconds)
 	if (HasAuthority())
 	{
 		auto ActorLocation = GetActorLocation();
-		// const auto GlobalTargetLocation = GetTransform().TransformPosition(TargetLocation);
-		const auto Direction = TargetLocation.GetSafeNormal();
-		ActorLocation += Speed * DeltaSeconds * Direction;
+		const auto Direction = MoveDirection.GetSafeNormal();
+		const auto CurrentDistance = (ActorLocation - StartLocation).Size();
+		
+		UE_LOG(LogTemp, Warning, TEXT("Dist %f"), CurrentDistance)
+		if ((CurrentDistance > Distance) && DirectionMultiplier > 0)
+		{
+			DirectionMultiplier = -1;
+		} else if ((CurrentDistance < 10) && DirectionMultiplier < 0)
+		{
+			DirectionMultiplier = 1;
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Multiplier: %f"), DirectionMultiplier)
+		ActorLocation += DirectionMultiplier * Speed * DeltaSeconds * Direction;
 
 		SetActorLocation(ActorLocation);
 	}
